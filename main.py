@@ -1,23 +1,33 @@
-from fastapi import FastAPI
-from pydantic import BaseModel
+from typing import Annotated
+from sqlmodel import SQLModel, Field,create_engine
+
+from fastapi import Depends, FastAPI
+
+app = FastAPI()
+
+def create_db_and_tables():
+    engine = create_engine("sqlite:///database.db")
+    SQLModel.metadata.create_all(engine)
 
 
-class Item(BaseModel):
+class Item(SQLModel):
+    id: int = Field(default=None, primary_key=True)
     name: str
     description: str | None = None
     price: float
     tax: float | None = None
 
 
-app = FastAPI(title='My FastAPI Application', description='This is a sample FastAPI application.', version='1.0.0')
+@app.get("/items/{item_id}")
+async def read_items(item_id: int, skip: int = 0, limit: int = 10):
+    response = {}
+    if q:
+        response.update({"q": q})
 
-@app.get("/")
-async def read_root():
-    return {"Hello": "World"}
+    items = fake_items_db[skip : skip + limit]
+    response.update({"items": items})
+    return response
+
 @app.post("/items/")
 async def create_item(item: Item):
-    item_dict = item.model_dump()
-    if item.tax is not None:
-        price_with_tax = item.price + item.tax
-        item_dict.update({"price_with_tax": price_with_tax})
-    return item_dict
+    return item
