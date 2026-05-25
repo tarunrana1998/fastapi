@@ -76,3 +76,24 @@ def test_get_current_user_profile(client: TestClient):
     assert response.status_code == 200
     data = response.json()
     assert data["username"] == "profileuser"
+
+
+def test_create_access_token_default_expiration():
+    import jwt
+    import datetime
+    from core.security import create_access_token
+    from core.config import SECRET_KEY, ALGORITHM
+
+    payload = {"sub": "testuser"}
+    token = create_access_token(data=payload)
+    
+    decoded = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+    assert decoded["sub"] == "testuser"
+    
+    exp = decoded["exp"]
+    now_utc = datetime.datetime.now(datetime.timezone.utc).timestamp()
+    expected_exp = now_utc + 15 * 60
+    
+    # Expiration should be roughly 15 minutes from now (allowing small execution delay)
+    assert abs(exp - expected_exp) < 10
+
